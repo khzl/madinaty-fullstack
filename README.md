@@ -82,21 +82,22 @@ To ensure smooth collaboration, **all team members must follow these steps** whe
 
 ## 📂 Project Structure
 
+
 madinaty/ # Main project folder
 ├── .git/ # Git configuration files
 ├── README.md # Project documentation
-├── package.json # Global config (if needed)
+├── package.json # Global configuration (if needed)
 │
 ├── backend/ # Backend (NestJS)
-│ ├── src/ # Source code
-│ ├── node_modules/ # Installed dependencies
-│ ├── package.json # Backend dependencies
+│ ├── src/ # Backend source code
+│ ├── node_modules/ # Backend installed dependencies
+│ ├── package.json # Backend dependencies configuration
 │ └── ...
 │
 └── frontend/ # Frontend (React)
-├── src/ # Source code
-├── node_modules/ # Installed dependencies
-├── package.json # Frontend dependencies
+├── src/ # Frontend source code
+├── node_modules/ # Frontend installed dependencies
+├── package.json # Frontend dependencies configuration
 └── ...
 
 
