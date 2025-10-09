@@ -1,0 +1,34 @@
+npm install @nestjs/swagger class-validator class-transformer
+npm install --save-dev @types/express
+
+class-transformer: 
+This package is a peer dependency of class-validator, 
+often used together for object validation and transformation in NestJS applications.
+
+@types/express: 
+This provides TypeScript type definitions for Express.js,
+ which NestJS is built on. While not always strictly necessary for this specific issue, 
+ it's a good practice to have it in a NestJS project to ensure proper typing.
+ ---------------------------------------------------------------------------------------
+ 
+npm install @nestjs/passport passport
+npm install --save-dev @types/passport
+
+----------------------------------------------------------------------------------------
+
+npm install passport-jwt
+
+----------------------------------------------------------------------------------------
+
+npm install @nestjs/jwt
+
+----------------------------------------------------------------------------------------
+
+npm install bcrypt
+
+---------------------------------------------------------------------------------------
+
+npm install @nestjs/typeorm
+
+----------------------------------------------------------------------------------------
+
