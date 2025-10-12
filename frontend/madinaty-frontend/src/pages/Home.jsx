@@ -1,13 +1,17 @@
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import ReportBtn from "../components/ReportBtn";
+import Sections from "../components/Sections";
 
 const Home = () => {
   return (
     <div>
       <Header />
       <Navbar />
-      <ReportBtn />
+      <div className=" lg:hidden">
+        <ReportBtn />
+      </div>
+      <Sections />
     </div>
   );
 };
