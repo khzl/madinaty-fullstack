@@ -22,6 +22,11 @@ h1 {
   opacity: 0.55;
 }
 
+h2 {
+  font-family: "lamasans";
+  font-weight: bold;
+}
+
 p {
   font-family: "lamasans";
   font-weight: normal;

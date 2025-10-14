@@ -6,8 +6,6 @@ import Sections from "../components/Sections";
 const Home = () => {
   return (
     <div>
-      <Header />
-      <Navbar />
       <div className=" lg:hidden">
         <ReportBtn />
       </div>
