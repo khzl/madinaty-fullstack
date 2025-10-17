@@ -1,15 +1,28 @@
-import { IsString, IsOptional, IsNumber , IsDate } from "class-validator";
+import { IsString, IsOptional, IsNumber , IsDate,
+    MinLength,IsUrl,IsJSON
+} from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateProblemDto{
 
     @ApiProperty({
-        description: 'Detailed description of the problem being reported..',
-        example: 'A large pothole has opened up on the main road near the central market ..',
-        minLength: 10,
+        description: 'a concise title summarizing the problem',
+        example: 'Large Pothole On Main Street',
+        minLength: 5,
+        maxLength: 255,
     })
     @IsString()
-    body: string;
+    @MinLength(5)
+    title: string;
+
+    @ApiProperty({
+        description: 'Detailed Description Of The Problem Being Reported..',
+        example: 'A Large Pothole Has Opened Up On The Main Road Near The Central Market...',
+        minLength: 20,
+    })
+    @IsString()
+    @MinLength(20)
+    description: string;
 
     @ApiProperty({
         description: 'URL or Path an image illustrating the problem',
@@ -18,12 +31,14 @@ export class CreateProblemDto{
     })
     @IsOptional()
     @IsString()
-    picture?: string;
+    @IsUrl()
+    imageUrl?: string;
 
     @ApiProperty({
         description: 'Human-readable name of the problem location (e.g., "Main Street near Park"',
         example: 'Main Street , opposite City Hall',
         required: false,
+        minLength: 255,
     })
     @IsOptional()
     @IsString()
@@ -36,6 +51,7 @@ export class CreateProblemDto{
     })
     @IsOptional()
     @IsString()
+    @IsJSON()
     location_map?: string;
 
     @ApiProperty({
@@ -43,7 +59,14 @@ export class CreateProblemDto{
         example: 5,
     })
     @IsNumber()
-    section_id: number;
+    sectionId: number;
 
-    
+    @ApiProperty({
+        description: 'Optional ID Of The Initial problem state',
+        example: 1,
+        required: false,
+    })
+    @IsOptional()
+    @IsNumber()
+    stateId?: number;
 }

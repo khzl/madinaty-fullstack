@@ -1,4 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany,
+    CreateDateColumn,UpdateDateColumn,Index,
+    JoinColumn,
+} from 'typeorm';
 import { Section } from 'src/sections/entities/section.entity';
 import { User } from 'src/users/entity/user.entity';
 import { Vote } from 'src/votes/entities/vote.entity';
@@ -6,34 +9,53 @@ import { Donation } from 'src/donations/entities/donation.entity';
 import { ProblemState } from 'src/problem-states/entities/problem-state.entity';
 
 @Entity('problems')
+@Index(['section_id','state_id','created_At'])
 export class Problem {
 
     @PrimaryGeneratedColumn()
     id:number;
 
-    @Column()
-    body: string;
+    @Column({length: 255})
+    title: string;
 
-    @Column({nullable: true})
-    picture: string;
+    @Column({type: 'text'})
+    description: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, type: 'varchar', length: 512})
+    imageUrl: string;
+
+    @Column({nullable: true, length: 255})
     location_name: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, type: 'varchar', length: 255})
     location_map: string;
 
-    @Column()
+
+    @CreateDateColumn({ type : 'timestamp'})
     created_at: Date;
 
-    @Column()
+    @UpdateDateColumn({ type: 'timestamp'})
     updated_at: Date;
 
-    @ManyToOne(() => Section , section => section.problems)
+    @Column()
+    section_id: number;
+
+    @ManyToOne(() => Section , section => section.problems, {
+        onDelete: 'CASCADE',
+        nullable: false,
+    })
+    @JoinColumn({name: 'section_id'})
     section: Section;
 
-    @ManyToOne(() => User , user => user.problems)
-    reporter: User;
+    @Column()
+    user_id: number;
+
+    @ManyToOne(() => User , user => user.problems,{
+        onDelete: 'CASCADE',
+        nullable: false,
+    })
+    @JoinColumn({name: 'user_id'})
+    createdBy: User;
 
     @OneToMany(() => Vote , vote => vote.problem)
     votes: Vote[];
@@ -41,7 +63,14 @@ export class Problem {
     @OneToMany(() => Donation , donation => donation.problem)
     donations: Donation[];
 
-    @OneToMany(() => ProblemState , problemState => problemState.problem)
-    problemStates: ProblemState[];
+    @Column({nullable: true})
+    state_id: number;
+
+    @ManyToOne(() => ProblemState , state => state.problem,{
+        onDelete: 'SET NULL',
+        nullable: true,
+    })
+    @JoinColumn({name: 'state_id'})
+    state: ProblemState[];
     
 }

@@ -5,6 +5,7 @@ import { join } from 'path';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { TransformInterceptor } from './common/Interceptors/transform.interceptor';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
 
@@ -40,6 +41,9 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new TransformInterceptor(),
   );
+
+  // Enable Global Filters
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   await app.listen(process.env.PORT ?? 3000);
   

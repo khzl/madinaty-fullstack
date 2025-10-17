@@ -10,7 +10,7 @@ import {
   import { LoginDto } from './dto/login.dto';
   import { ChangePasswordDto } from './dto/change-password.dto';
   import * as bcrypt from 'bcrypt';
-import { User } from 'src/users/entities/user.entity';  
+import { User } from 'src/users/entity/user.entity';
   @Injectable()
   export class AuthService {
     constructor(
@@ -30,11 +30,12 @@ import { User } from 'src/users/entities/user.entity';
         }
         
         // Create user
-        const user = await this.usersService.createUser({
+        const user = await this.usersService.create({
           email,
           name,
           password: password,
           role,
+          username: ''
         });
     
         // Generate JWT token
