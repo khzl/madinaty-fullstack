@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import OptionsMenu from "./ProfileOptionMenu";
+import InstallButton from "./InstallBtn";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -18,7 +20,10 @@ export default function Header() {
         scrolled ? "shadow-md" : "shadow-none"
       }`}
     >
-      <div className="bg-gray-400 w-[64px] h-[64px] rounded-full"></div>
+      <div>
+        <OptionsMenu />
+        {/* <InstallButton /> */}
+      </div>
       <h1 className="text-3xl">مدينتي</h1>
     </div>
   );
