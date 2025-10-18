@@ -1,25 +1,19 @@
-import { IsNumber, IsIn, IsEnum , IsOptional } from "class-validator";
+import { IsNumber, IsEnum , IsOptional, IsBoolean, IsInt } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-
-export enum VoteValue{
-    UPVOTE = 1,
-    DOWNVOTE = -1,
-}
 
 export class CreateVoteDto{
 
     @ApiProperty({
-        description: 'The Value of The Vote (1 For upvote , -1 for downvote).',
-        enum: VoteValue,
-        example: 1,
+        description: 'The Direction Of The Vote (true for upvote, false for downvote).',
+        example: true,
     })
-    @IsEnum(VoteValue)
-    value: VoteValue;
+    @IsBoolean()
+    IsUpvote: boolean;
 
     @ApiProperty({
         description: 'The ID of the problem being voted on.',
         example: 45,
     })
-    @IsNumber()
+    @IsInt()
     problem_id: number;
 }
