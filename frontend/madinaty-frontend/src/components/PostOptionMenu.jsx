@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../style/dropDown.css";
 
-export default function OptionsMenu() {
+export default function OptionsMenu({ isAdmin = true }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef();
 
@@ -24,6 +24,16 @@ export default function OptionsMenu() {
 
       {open && (
         <div className="dropdown">
+          {isAdmin && (
+            <button
+              onClick={() => {
+                alert("تم انجازه ✅");
+                setOpen(false);
+              }}
+            >
+              تم انجازه
+            </button>
+          )}
           <Link to="/learned" onClick={() => setOpen(false)}>
             تعديل{" "}
           </Link>
