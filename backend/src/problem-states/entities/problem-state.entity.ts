@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne,
+    OneToMany,CreateDateColumn,UpdateDateColumn
+ } from 'typeorm';
 import { Problem } from '../../problems/entities/problem.entity';
-import { User } from 'src/users/entity/user.entity';
 
 @Entity('problem_states')
 export class ProblemState {
@@ -8,18 +9,19 @@ export class ProblemState {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    status: string;
+    @Column({nullable: true})
+    name: string;
 
-    @Column()
+    @Column({nullable: true})
+    description: string;
+
+    @Column({type: 'timestamp', name: 'created_at'})
     created_at: Date;
 
-    @Column()
+    @Column({type: 'timestamp', name: 'updated_at'})
     updated_at: Date;
 
-    @ManyToOne(() => Problem , Problem => Problem.problemStates)
-    problem: Problem;
+    @OneToMany(() => Problem , Problem => Problem.state)
+    problem: Problem[];
 
-    @ManyToOne(() => User , user => user.solvedProblems)
-    solved_by: User;
 }

@@ -11,6 +11,7 @@ import { SectionsModule } from './sections/sections.module';
 import { VotesModule } from './votes/votes.module';
 import { DonationsModule } from './donations/donations.module';
 import { ProblemStatesModule } from './problem-states/problem-states.module';
+import { ProblemStatusHistoryModule } from './problem-status-History/problem-status-history.module';
 // import entities
 import { User } from './users/entity/user.entity';
 import { Problem } from './problems/entities/problem.entity';
@@ -18,7 +19,7 @@ import { Section } from './sections/entities/section.entity';
 import { Vote } from './votes/entities/vote.entity';
 import { Donation } from './donations/entities/donation.entity';
 import { ProblemState } from './problem-states/entities/problem-state.entity';
-
+import { ProblemStatusHistory } from './problem-status-History/entities/problem-status-history.entity';
 import { LoggerMiddleware } from './common/Middleware/logger.middleware';
 
 @Module({
@@ -39,12 +40,30 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
         username: configService.get<string>('PG_USERNAME'),
         password: configService.get<string>('PG_PASSWORD'),
         database: configService.get<string>('PG_DATABASENAME'),
-        entities: [User,Problem,Section,Vote,Donation,ProblemState],
+        entities: 
+        [
+          User,
+          Problem,
+          Section,
+          Vote,
+          Donation,
+          ProblemState,
+          ProblemStatusHistory
+        ],
         autoLoadEntities: true,
         synchronize: true,  // Disable in production 
       }),
     }),
-    TypeOrmModule.forFeature([User,Problem,Section,Vote,Donation,ProblemState]),
+    TypeOrmModule.forFeature(
+      [
+        User,
+        Problem,
+        Section,
+        Vote,
+        Donation,
+        ProblemState,
+        ProblemStatusHistory
+      ]),
     UsersModule, // Register Users Module
     ProblemsModule, // Register Problem Module 
     SectionsModule, // Register Section Module
@@ -52,6 +71,7 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
     DonationsModule, // Register Donations Module
     ProblemStatesModule, // Register ProblemStates Module
     AuthModule, // Register Auth Module
+    ProblemStatusHistoryModule, // Register ProblemStatusHistory Module
   ],
   controllers: [AppController],
   providers: [AppService],
