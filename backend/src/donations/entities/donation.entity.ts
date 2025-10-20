@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne,
+    JoinColumn,CreateDateColumn,UpdateDateColumn,DeleteDateColumn
+ } from 'typeorm';
 import { Problem } from '../../problems/entities/problem.entity';
 import { User } from 'src/users/entity/user.entity';
 
@@ -8,21 +10,49 @@ export class Donation {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column('decimal', {
+        precision: 10,
+        scale: 2,
+        nullable: false
+    })
     amount: number;
 
-    @Column()
+    @Column({length: 3 , default: 'SAR'})
     currency: string;
 
-    @Column()
+    @Column({ name: 'payment_method', default: 'Credit Card'})
+    paymentMethod: string;
+
+    @Column({nullable: true})
+    message: string;
+
+    @CreateDateColumn({type: 'timestamp'})
     created_at: Date;
 
-    @Column()
+    @UpdateDateColumn({type: 'timestamp'})
     updated_at: Date;
 
-    @ManyToOne(() => Problem , problem => problem.donations)
+    @DeleteDateColumn({type: 'timestamp', name: 'deleted_at', nullable: true})
+    deletedAt: Date;
+
+    // foreign key 
+    @Column({name: 'user_id'})
+    user_id: number;
+
+    @Column({name: 'problem_id' , nullable: true})
+    problem_id?: number;
+
+    @ManyToOne(() => Problem , problem => problem.donations, {
+        onDelete: 'SET NULL',
+        nullable: true
+    })
+    @JoinColumn({ name: 'problem_id'})
     problem: Problem;
 
-    @ManyToOne(() => User , user => user.donations)
-    user: User;
+    @ManyToOne(() => User , user => user.donations , {
+        onDelete: 'CASCADE',
+        nullable: false,
+    })
+    @JoinColumn({name: 'user_id'})
+    donor: User;
 }

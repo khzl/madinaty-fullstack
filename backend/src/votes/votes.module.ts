@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module , forwardRef } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { VotesService } from "./votes.service";
 import { VotesController } from "./votes.controller";
@@ -12,8 +12,8 @@ import { ProblemsModule } from "src/problems/problems.module";
         TypeOrmModule.forFeature([Vote]),
         // Foreign entity must import here 
         // imports Modules foreign entity
-        UsersModule,
-        ProblemsModule,
+        forwardRef(() => UsersModule),
+        forwardRef(() => ProblemsModule),
     ],
     controllers: [VotesController],
     providers: [

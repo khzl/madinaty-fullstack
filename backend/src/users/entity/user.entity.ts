@@ -1,14 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany ,
+    CreateDateColumn,UpdateDateColumn
+} from 'typeorm';
 import { Problem } from "src/problems/entities/problem.entity";
 import { Vote } from "src/votes/entities/vote.entity";
 import { Donation } from "src/donations/entities/donation.entity";
-import { ProblemState } from "src/problem-states/entities/problem-state.entity";
-
+import { ProblemStatusHistory } from 'src/problem-status-History/entities/problem-status-history.entity';
+import { ProblemState } from 'src/problem-states/entities/problem-state.entity';
 
 // Define the UserRole enum
 export enum UserRole {
     CITIZEN = 'citizen',
     GOVERNMENT = 'government',
+    ADMIN = 'admin'
 }
 
 @Entity('users')
@@ -40,21 +43,21 @@ export class User {
     })
     role: UserRole;
 
-    @Column()
+    @CreateDateColumn()
     created_at: Date;
 
-    @Column()
+    @UpdateDateColumn()
     updated_at: Date;
 
-    @OneToMany(() => Problem , problem => problem.reporter)
+    @OneToMany(() => Problem , problem => problem.createdBy)
     problems: Problem[];
 
     @OneToMany(() => Vote , vote => vote.user)
     votes: Vote[];
 
-    @OneToMany(() => Donation , donation => donation.user)
+    @OneToMany(() => Donation , donation => donation.donor)
     donations: Donation[];
 
-    @OneToMany(() => ProblemState, problemState => problemState.solved_by)
-    solvedProblems: ProblemState[]; 
+    @OneToMany(() => ProblemStatusHistory, history => history.changedBy)
+    statusChanges: ProblemStatusHistory[]; 
 }

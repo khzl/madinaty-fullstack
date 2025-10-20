@@ -11,6 +11,15 @@ import {
   import { ChangePasswordDto } from './dto/change-password.dto';
   import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entity/user.entity';
+
+const SALT_ROUNDS = 12;
+
+type AuthResponse = {
+
+  user: Partial<User>;
+  access_token: string;
+}
+
   @Injectable()
   export class AuthService {
     constructor(
@@ -19,8 +28,19 @@ import { User } from 'src/users/entity/user.entity';
     ) {}
 
 
+    // function to generate JWT token
+    private _generateToken(user: User): string {
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role
+      };
+      return this.jwtService.sign(payload);
+    }
+
+
     // 1- register()
-    async register(registerDto: RegisterDto): Promise<{ user: Partial<User>; access_token: string }> {
+    async register(registerDto: RegisterDto): Promise<AuthResponse> {
         const { email, password, name, role } = registerDto;
     
         // Check if user already exists
@@ -29,18 +49,19 @@ import { User } from 'src/users/entity/user.entity';
           throw new ConflictException('User with this email already exists');
         }
         
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
         // Create user
         const user = await this.usersService.create({
           email,
           name,
-          password: password,
+          password: hashedPassword,
           role,
           username: ''
         });
     
         // Generate JWT token
-        const payload = { sub: user.id, email: user.email, role: user.role };
-        const access_token = this.jwtService.sign(payload);
+        const access_token = this._generateToken(user);
     
         // Return user without password
         const { password: _, ...userWithoutPassword } = user;
@@ -52,7 +73,7 @@ import { User } from 'src/users/entity/user.entity';
       }
 
     // 2- login()
-    async login(loginDto: LoginDto): Promise<{ user: Partial<User>; access_token: string }> {
+    async login(loginDto: LoginDto): Promise<AuthResponse> {
       const { email, password } = loginDto;
   
       // Find user by email
@@ -68,8 +89,7 @@ import { User } from 'src/users/entity/user.entity';
       }
   
       // Generate JWT token
-      const payload = { sub: user.id, email: user.email, role: user.role };
-      const access_token = this.jwtService.sign(payload);
+      const access_token = this._generateToken(user);
   
       // Return user without password
       const { password: _, ...userWithoutPassword } = user;
@@ -97,7 +117,7 @@ import { User } from 'src/users/entity/user.entity';
         }
     
         // Hash new password
-        const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+        const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
     
         // Update password
         await this.usersService.updatePassword(userId, hashedNewPassword);

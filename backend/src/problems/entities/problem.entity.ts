@@ -7,9 +7,10 @@ import { User } from 'src/users/entity/user.entity';
 import { Vote } from 'src/votes/entities/vote.entity';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { ProblemState } from 'src/problem-states/entities/problem-state.entity';
+import { ProblemStatusHistory } from 'src/problem-status-History/entities/problem-status-history.entity';
 
 @Entity('problems')
-@Index(['section_id','state_id','created_At'])
+@Index(['section_id','state_id','created_at'])
 export class Problem {
 
     @PrimaryGeneratedColumn()
@@ -21,20 +22,34 @@ export class Problem {
     @Column({type: 'text'})
     description: string;
 
-    @Column({nullable: true, type: 'varchar', length: 512})
+    @Column({
+        nullable: true,
+        type: 'varchar',
+        length: 512,
+        name: 'image_url'
+    })
     imageUrl: string;
 
-    @Column({nullable: true, length: 255})
+    @Column({
+        nullable: true,
+        length: 255,
+        name: 'location_name'
+    })
     location_name: string;
 
-    @Column({nullable: true, type: 'varchar', length: 255})
+    @Column({
+        nullable: true,
+        type: 'varchar',
+        length: 255,
+        name: 'location_map'
+    })
     location_map: string;
 
 
-    @CreateDateColumn({ type : 'timestamp'})
+    @CreateDateColumn({type : 'timestamp'})
     created_at: Date;
 
-    @UpdateDateColumn({ type: 'timestamp'})
+    @UpdateDateColumn({type: 'timestamp'})
     updated_at: Date;
 
     @Column()
@@ -71,6 +86,8 @@ export class Problem {
         nullable: true,
     })
     @JoinColumn({name: 'state_id'})
-    state: ProblemState[];
-    
+    state: ProblemState;
+
+    @OneToMany(() => ProblemStatusHistory , history => history.problem)
+    statusHistory: ProblemStatusHistory[];
 }

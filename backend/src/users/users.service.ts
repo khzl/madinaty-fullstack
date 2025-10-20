@@ -7,7 +7,7 @@ import {
 from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from 'bcrypt'
-import { User } from "./entity/user.entity";
+import { User , UserRole } from "./entity/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { Repository } from 'typeorm';
@@ -28,10 +28,13 @@ export class UsersService {
     ) {}
 
     // 1- Create a New User With Password Hash 
-    async create(UserDto: CreateUserDto): Promise<User>{
+    async create(UserDto: CreateUserDto, isAdminCreating: boolean = false): Promise<User>{
 
         // check if user already exists 
-        const existingUser = await this.findByEmail(UserDto.email);
+        const existingUser = await this.UserRepo.findOne({
+            where: {email: UserDto.email},
+            select: ['id']
+        });
 
         if (existingUser){
             throw new ConflictException('User With This Email Already Exists');
@@ -40,9 +43,14 @@ export class UsersService {
         // hash password before saving
         const hashedPassword = await hashPassword(UserDto.password);
 
+        // determine role : citizens register themselves ; admin sets role
+        const role = isAdminCreating && UserDto.role ?
+        UserDto.role : UserRole.CITIZEN;
+
         const user = this.UserRepo.create({
             ...UserDto,
             password: hashedPassword,
+            role: role,
         });
 
         return this.UserRepo.save(user);
@@ -53,7 +61,7 @@ export class UsersService {
         const skip = (page - 1) * limit;
 
         return this.UserRepo.find({
-            relations: ['problems','votes','donations'],
+            relations: ['problems','votes','donations','statusChanges'],
             order: {id : 'ASC'},
             take: limit,
             skip: skip,
@@ -65,7 +73,7 @@ export class UsersService {
         const user = await this.UserRepo.findOne({
             where: {id},
             // add relation to fetch data connect user
-            relations: ['problems','votes','donations'],
+            relations: ['problems','votes','donations','statusChanges'],
         });
 
         if(!user){
@@ -128,19 +136,12 @@ export class UsersService {
     }
 
     // 7- remove user 
-    async remove(id: number): Promise<{
-        deleted: boolean;
-        message?:string        
-    }>{
+    async remove(id: number): Promise<void>{
         const result = await this.UserRepo.delete(id);
 
         if (result.affected === 0){
             throw new NotFoundException(`User With ID ${id} Not Found`);
         }
-
-        return {
-            deleted: true,
-            message: 'User Deleted Successfully'
-        };
     }
+    
 }

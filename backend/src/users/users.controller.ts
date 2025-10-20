@@ -8,6 +8,10 @@ import {
     Patch,
     ParseIntPipe,
     UseGuards, 
+    Req,
+    HttpStatus,
+    HttpCode,
+    Query,
 }
 from "@nestjs/common";
 import { 
@@ -18,7 +22,10 @@ import {
     ApiBearerAuth,
     ApiForbiddenResponse,
     ApiUnauthorizedResponse,
-    ApiParam, 
+    ApiQuery,
+    ApiOkResponse,
+    ApiParam,
+    ApiNotFoundResponse, 
 }
 from "@nestjs/swagger";
 import { UsersService } from "./users.service";
@@ -29,6 +36,8 @@ import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { Roles } from "src/auth/decorators/roles.decorator";
 import { UserRole } from "./entity/user.entity";
 import { OwnerOrAdminGuard } from "src/auth/guards/owner-or-admin.guard";
+import { RolesGuard } from "src/auth/guards/roles.guard";
+import { Request } from "express";
 @ApiTags('users')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
@@ -41,7 +50,8 @@ export class UsersController {
     // 1- create user (Registration)
     @Post()
     @ApiOperation({
-        summary: 'Create a new User (Registration)'
+        summary: 'Create a new User (public Registration)',
+        description: 'New users are created with the CITIZEN role by default.'
     })
     @ApiBody({
         type: CreateUserDto
@@ -60,15 +70,28 @@ export class UsersController {
         description: 'Validation Failed'
     })
     create(@Body() userDto: CreateUserDto){
-        return this.usersService.create(userDto);
+        return this.usersService.create(userDto,false);
     }
 
     // 2- find All 
     @Get()
-    @UseGuards(JwtAuthGuard,OwnerOrAdminGuard)
-    @Roles(UserRole.GOVERNMENT)
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(UserRole.GOVERNMENT,UserRole.ADMIN)
     @ApiOperation({
-        summary: 'Retrieve All Users'
+        summary: 'Retrieve all Users (ADMIN/GOVERNMENT required)',
+        description: 'Returns a paginated list of all user records.'
+    })
+    @ApiQuery({ 
+        name: 'page',
+        required: false,
+        type: Number,
+        example: 1 
+    })
+    @ApiQuery({ 
+        name: 'limit',
+        required: false,
+        type: Number,
+        example: 10 
     })
     @ApiResponse({
         status: 200,
@@ -78,15 +101,19 @@ export class UsersController {
     @ApiForbiddenResponse({
         description: 'Forbidden (Requires Government Role)'
     })
-    findAll(){
-        return this.usersService.findAll();
+    findAll(
+        @Query('page', new ParseIntPipe({optional: true})) page: number = 1,
+        @Query('limit', new ParseIntPipe({optional: true})) limit: number = 10,
+    ){
+        return this.usersService.findAll(page,limit);
     }
 
     // 3- find user by id - Owner or admin only
     @Get(':id')
     @UseGuards(JwtAuthGuard,OwnerOrAdminGuard)
     @ApiOperation({
-        summary: 'Retrieve a User By Id'
+        summary: 'Retrieve a User by ID (Owner or Admin/Government required)',
+        description: 'Allows users to view their own profile or an Admin/Government to view any profile.'
     })
     @ApiParam({
         name: 'id',
@@ -113,7 +140,8 @@ export class UsersController {
     @Patch(':id')
     @UseGuards(JwtAuthGuard,OwnerOrAdminGuard)
     @ApiOperation({
-        summary: 'Update a User Record By Id'
+        summary: 'Update a User Record by ID (Owner or Admin/Government required)',
+        description: 'Allows a user to update their own non-sensitive details or an Admin to update any user\'s record.'
     })
     @ApiParam({
         name: 'id',
@@ -149,8 +177,10 @@ export class UsersController {
     // 5- delete user - owner or admin only 
     @Delete(':id')
     @UseGuards(JwtAuthGuard,OwnerOrAdminGuard)
+    @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({
-        summary: 'Delete a User by Id'
+        summary: 'Delete a User by ID (Owner or Admin/Government required)',
+        description: 'Permanently deletes a user record. Use with caution.'
     })
     @ApiParam({
         name: 'id',
@@ -164,8 +194,7 @@ export class UsersController {
     @ApiForbiddenResponse({
         description: 'Forbidden (Not Owner Or Admin)'
     })
-    @ApiResponse({
-        status: 404,
+    @ApiNotFoundResponse({
         description: 'User Not Found'
     })
     remove(@Param('id', ParseIntPipe) targetUserId: number){

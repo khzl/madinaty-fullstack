@@ -28,26 +28,26 @@ export class ProblemStatusHistory {
     @Column()
     changed_by_id: number;
 
-    @ManyToOne(() => Problem , {
+    @ManyToOne(() => Problem , problem => problem.statusHistory, {
         onDelete: 'CASCADE',
         nullable: false
     })
     @JoinColumn({name: 'problem_id'})
     problem: Problem;
 
-    @ManyToOne(() => ProblemState , {
+    @ManyToOne(() => ProblemState , state => state.oldStatusHistory , {
         nullable: true
     })
-    @JoinColumn({name: 'old_state_id'})
+    @JoinColumn({name: 'old_status_id'})
     oldState: ProblemState;
 
-    @ManyToOne(() => ProblemState , {
+    @ManyToOne(() => ProblemState , state => state.newStatusHistory , {
         nullable: false
     })
-    @JoinColumn({name: 'new_state_id'})
+    @JoinColumn({name: 'new_status_id'})
     newState: ProblemState;
 
-    @ManyToOne(() => User , {
+    @ManyToOne(() => User ,  user => user.statusChanges , {
         nullable: false
     })
     @JoinColumn({name: 'changed_by_id'})

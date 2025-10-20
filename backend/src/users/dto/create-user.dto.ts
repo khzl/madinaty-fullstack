@@ -7,10 +7,12 @@ export class CreateUserDto{
 
     @ApiProperty({
         description: 'Full Name Of The User',
-        example: 'Khazaal Emad'
+        example: 'Ali',
+        minLength: 3,
     })
     @IsString()
     @IsNotEmpty()
+    @MinLength(3)
     name: string;
 
     @ApiProperty({
@@ -24,10 +26,12 @@ export class CreateUserDto{
 
     @ApiProperty({
         description: 'Unique username',
-        example: 'Khazaal Emad'
+        example: 'Ali',
+        minLength: 4,
     })
     @IsString()
     @IsNotEmpty()
+    @MinLength(4)
     username: string;
 
     @ApiProperty({
@@ -39,11 +43,11 @@ export class CreateUserDto{
 
     @ApiProperty({
         description: 'User password (min 6 characters)',
-        minLength: 6
+        minLength: 8
     })
     @IsString()
     @IsNotEmpty()
-    @MinLength(6)
+    @MinLength(8)
     password: string;
 
     @ApiProperty({
@@ -55,4 +59,5 @@ export class CreateUserDto{
     @IsOptional()
     @IsEnum(UserRole)
     role?: UserRole;
+    
 }

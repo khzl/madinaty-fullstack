@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module , forwardRef} from "@nestjs/common";
 import { ProblemOwnerOrAdminGuard } from "src/auth/guards/problem-owner-or-admin.guard";
 import { ProblemsService } from "./problems.service";
 import { ProblemsController } from "./problems.controller";
@@ -13,8 +13,8 @@ import { UsersModule } from "src/users/users.module";
     imports:[TypeOrmModule.forFeature([Problem]),
     // import modules
     SectionsModule,
-    ProblemStatesModule,
-    UsersModule,
+    forwardRef(() => ProblemStatesModule),
+    forwardRef(() => UsersModule),
     ],
     controllers: [ProblemsController],
     providers:[

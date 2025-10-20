@@ -20,6 +20,7 @@ import { Vote } from './votes/entities/vote.entity';
 import { Donation } from './donations/entities/donation.entity';
 import { ProblemState } from './problem-states/entities/problem-state.entity';
 import { ProblemStatusHistory } from './problem-status-History/entities/problem-status-history.entity';
+
 import { LoggerMiddleware } from './common/Middleware/logger.middleware';
 
 @Module({
@@ -40,6 +41,7 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
         username: configService.get<string>('PG_USERNAME'),
         password: configService.get<string>('PG_PASSWORD'),
         database: configService.get<string>('PG_DATABASENAME'),
+        // Register All Entity Here 
         entities: 
         [
           User,
@@ -50,12 +52,12 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
           ProblemState,
           ProblemStatusHistory
         ],
-        autoLoadEntities: true,
+        //autoLoadEntities: true,
         synchronize: true,  // Disable in production 
       }),
     }),
     TypeOrmModule.forFeature(
-      [
+    [
         User,
         Problem,
         Section,
@@ -63,7 +65,7 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
         Donation,
         ProblemState,
         ProblemStatusHistory
-      ]),
+    ]),
     UsersModule, // Register Users Module
     ProblemsModule, // Register Problem Module 
     SectionsModule, // Register Section Module
@@ -76,7 +78,6 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
   controllers: [AppController],
   providers: [AppService],
 })
-
 
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

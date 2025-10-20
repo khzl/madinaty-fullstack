@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne,
     CreateDateColumn,Unique,
     JoinColumn,
+    UpdateDateColumn,
  } from 'typeorm';
 import { Problem } from '../../problems/entities/problem.entity';
 import { User } from 'src/users/entity/user.entity';
@@ -15,10 +16,10 @@ export class Vote {
     @Column({default: true, name: 'is_upvote'})
     IsUpvote: boolean;
 
-    @Column({type: 'timestamp', name: 'created_at'})
+    @CreateDateColumn({type: 'timestamp'})
     created_at: Date;
 
-    @Column({type: 'timestamp', name: 'updated_at'})
+    @UpdateDateColumn({type: 'timestamp'})
     updated_at: Date;
 
     // explicit foreign keys
