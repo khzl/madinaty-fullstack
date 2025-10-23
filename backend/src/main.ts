@@ -27,11 +27,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
-  // Server static file 
-  app.useStaticAssets(join(__dirname, '...' , 'uploads'),{
-    prefix: '/uploads/',
-  });
-
+  
   const config = new DocumentBuilder()
     .setTitle('Madinaty API')
     .setDescription('API documentation for the Madinaty application')

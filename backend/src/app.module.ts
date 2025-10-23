@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 // import Modules
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -12,6 +14,8 @@ import { VotesModule } from './votes/votes.module';
 import { DonationsModule } from './donations/donations.module';
 import { ProblemStatesModule } from './problem-states/problem-states.module';
 import { ProblemStatusHistoryModule } from './problem-status-History/problem-status-history.module';
+import { NotificationsModule } from './notification/notifications.module';
+import { UploadsModule } from './uploads/uploads.module';
 // import entities
 import { User } from './users/entity/user.entity';
 import { Problem } from './problems/entities/problem.entity';
@@ -20,7 +24,7 @@ import { Vote } from './votes/entities/vote.entity';
 import { Donation } from './donations/entities/donation.entity';
 import { ProblemState } from './problem-states/entities/problem-state.entity';
 import { ProblemStatusHistory } from './problem-status-History/entities/problem-status-history.entity';
-
+import { Notification } from './notification/entities/notification.entity';
 import { LoggerMiddleware } from './common/Middleware/logger.middleware';
 
 @Module({
@@ -28,6 +32,11 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
     // Load File .env 
     ConfigModule.forRoot({
       isGlobal: true, // ConfigService public in all project 
+    }),
+
+    ServeStaticModule.forRoot({
+        rootPath: join(__dirname, '..', '..', 'uploads'), 
+        serveRoot: '/uploads', 
     }),
 
     // database connection 
@@ -50,7 +59,8 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
           Vote,
           Donation,
           ProblemState,
-          ProblemStatusHistory
+          ProblemStatusHistory,
+          Notification,
         ],
         //autoLoadEntities: true,
         synchronize: true,  // Disable in production 
@@ -64,7 +74,8 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
         Vote,
         Donation,
         ProblemState,
-        ProblemStatusHistory
+        ProblemStatusHistory,
+        Notification,
     ]),
     UsersModule, // Register Users Module
     ProblemsModule, // Register Problem Module 
@@ -74,6 +85,8 @@ import { LoggerMiddleware } from './common/Middleware/logger.middleware';
     ProblemStatesModule, // Register ProblemStates Module
     AuthModule, // Register Auth Module
     ProblemStatusHistoryModule, // Register ProblemStatusHistory Module
+    NotificationsModule, // Register Notifications Module 
+    UploadsModule, // Register Uploads Module 
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -11,9 +11,11 @@ import {
     Req,
     HttpStatus,
     HttpCode,
+    BadRequestException,
     Query,
 }
 from "@nestjs/common";
+import 'multer';
 import { 
     ApiTags,
     ApiOperation,
@@ -37,7 +39,10 @@ import { Roles } from "src/auth/decorators/roles.decorator";
 import { UserRole } from "./entity/user.entity";
 import { OwnerOrAdminGuard } from "src/auth/guards/owner-or-admin.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
-import { Request } from "express";
+import type { Request } from "express";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { UploadedFile } from "@nestjs/common";
+import { UseInterceptors } from "@nestjs/common";
 @ApiTags('users')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
@@ -135,7 +140,6 @@ export class UsersController {
     findOne(@Param('id',ParseIntPipe) targetUserId: number){
         return this.usersService.findById(targetUserId);
     }
-
     // 4- update Users - Owner or Admin only 
     @Patch(':id')
     @UseGuards(JwtAuthGuard,OwnerOrAdminGuard)
@@ -169,9 +173,15 @@ export class UsersController {
     })
     update(
         @Param('id',ParseIntPipe) targetUserId: number,
-        @Body() userDto: UpdateUserDto)
+        @Body() userDto: UpdateUserDto,
+        @Req()  request: Request
+    )
     {
-        return this.usersService.update(targetUserId,userDto);
+        const userId = (request.user as any)?.id;
+        if (typeof userId !== 'number') {
+            throw new BadRequestException('Authenticated user id not found');
+        }
+        return this.usersService.update(targetUserId,userDto,userId);
     }
 
     // 5- delete user - owner or admin only 
@@ -199,5 +209,40 @@ export class UsersController {
     })
     remove(@Param('id', ParseIntPipe) targetUserId: number){
         return this.usersService.remove(targetUserId);
+    }
+
+    @Patch('profile') 
+    @UseGuards(JwtAuthGuard) 
+    @UseInterceptors(FileInterceptor('profile_picture'))
+    @ApiOperation({
+        summary: 'Update the Current User\'s Profile and Upload Picture',
+        description: 'Updates partial user data and optionally uploads a new profile picture. Note: Password/Role cannot be changed here.'
+    })
+    @ApiBody({
+        type: UpdateUserDto,
+        description: 'Partial user data (name, username, email). Picture file is sent via form-data.',
+    })
+    @ApiOkResponse({
+        description: 'Profile Updated Successfully',
+        type: User
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden (Invalid Role/Admin only fields)'
+    })
+    updateProfile(
+        @UploadedFile() file: any, 
+        @Body() userDto: UpdateUserDto,
+        @Req() request: Request 
+    ) {
+        const currentUserId = (request.user as any)?.id;
+        if (typeof currentUserId !== 'number') {
+            throw new BadRequestException('Authenticated user id not found');
+        }
+        if (file) {
+            userDto.profile_picture = file.path; 
+        }
+        delete userDto.password;
+        delete userDto.role; 
+        return this.usersService.update(currentUserId, userDto, currentUserId);
     }
 }

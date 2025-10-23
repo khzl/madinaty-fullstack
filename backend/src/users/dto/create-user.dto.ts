@@ -10,6 +10,7 @@ export class CreateUserDto{
         example: 'Ali',
         minLength: 3,
     })
+    @IsOptional()
     @IsString()
     @IsNotEmpty()
     @MinLength(3)
@@ -29,6 +30,7 @@ export class CreateUserDto{
         example: 'Ali',
         minLength: 4,
     })
+    @IsOptional()
     @IsString()
     @IsNotEmpty()
     @MinLength(4)
@@ -38,6 +40,7 @@ export class CreateUserDto{
         description: 'Unique email address',
         example: 'Khazaal34@gmail.com'
     })
+    @IsOptional()
     @IsEmail()
     email: string;
 
@@ -45,6 +48,7 @@ export class CreateUserDto{
         description: 'User password (min 6 characters)',
         minLength: 8
     })
+    @IsOptional()
     @IsString()
     @IsNotEmpty()
     @MinLength(8)

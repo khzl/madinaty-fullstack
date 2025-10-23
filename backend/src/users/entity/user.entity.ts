@@ -1,12 +1,14 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany ,
-    CreateDateColumn,UpdateDateColumn
+    CreateDateColumn,UpdateDateColumn,
+    BaseEntity
 } from 'typeorm';
 import { Problem } from "src/problems/entities/problem.entity";
 import { Vote } from "src/votes/entities/vote.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { ProblemStatusHistory } from 'src/problem-status-History/entities/problem-status-history.entity';
 import { ProblemState } from 'src/problem-states/entities/problem-state.entity';
-
+import { Notification } from 'src/notification/entities/notification.entity';
+import { Exclude } from 'class-transformer';
 // Define the UserRole enum
 export enum UserRole {
     CITIZEN = 'citizen',
@@ -15,7 +17,7 @@ export enum UserRole {
 }
 
 @Entity('users')
-export class User {
+export class User extends BaseEntity {
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -34,6 +36,7 @@ export class User {
     email: string;
 
     @Column({select: false})
+    @Exclude()
     password: string;
 
     @Column({
@@ -59,5 +62,11 @@ export class User {
     donations: Donation[];
 
     @OneToMany(() => ProblemStatusHistory, history => history.changedBy)
-    statusChanges: ProblemStatusHistory[]; 
+    statusChanges: ProblemStatusHistory[];
+    
+    @OneToMany(() => Notification , notification => notification.user)
+    notifications: Notification[];
+
+    @OneToMany(() => ProblemState , state => state.solver)
+    solvedStates: ProblemState[];
 }

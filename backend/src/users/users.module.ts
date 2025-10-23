@@ -8,6 +8,7 @@ import { VotesModule } from 'src/votes/votes.module';
 import { DonationsModule } from 'src/donations/donations.module';
 import { ProblemStatusHistory } from 'src/problem-status-History/entities/problem-status-history.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { NotificationsModule } from 'src/notification/notifications.module';
 @Module({
   imports: [
     // register only primary entity 
@@ -18,10 +19,15 @@ import { AuthModule } from 'src/auth/auth.module';
     DonationsModule,
     ProblemStatusHistory,
     AuthModule,
+    NotificationsModule,
   ],
   providers: [UsersService],
   controllers: [UsersController],
-  exports: [UsersService],
+  exports: 
+  [
+    UsersService,
+    TypeOrmModule.forFeature([User])
+  ],
 })
 
 export class UsersModule {}

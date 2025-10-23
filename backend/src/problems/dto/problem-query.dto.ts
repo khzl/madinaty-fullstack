@@ -38,4 +38,11 @@ export class ProblemQueryDto {
     @IsOptional()
     @IsNumberString()
     stateId?: string;
+
+    @ApiProperty({
+        description: 'Search term Applied To the Problem title'
+    })
+    @IsOptional()
+    @IsNumberString()
+    searchTerm: string;
 }

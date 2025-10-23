@@ -54,7 +54,11 @@ export class ProblemStatesService {
     }
 
     // update state 
-    async update(id: number, stateDto: UpdateProblemStateDto): Promise<ProblemState>{
+    async update(
+        id: number,
+        stateDto: UpdateProblemStateDto,
+        currentUserId: number
+    ): Promise<ProblemState>{
 
         const state = await this.findOne(id);
 
@@ -73,6 +77,13 @@ export class ProblemStatesService {
         }
 
         Object.assign(state,stateDto);
+
+        if (stateDto.name && (stateDto.name.toLowerCase() === 'solved' || stateDto.name.toLowerCase() === 'closed')) {
+            state.solverUserId = currentUserId;
+        } else if (stateDto.name && stateDto.name.toLowerCase() !== state.name.toLowerCase()) {
+            state.solverUserId = null; 
+        }
+        
         return this.stateRepo.save(state);
     }
 

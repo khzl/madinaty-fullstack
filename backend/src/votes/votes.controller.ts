@@ -23,10 +23,10 @@ export class VotesController {
     @Post()
     @UseGuards(JwtAuthGuard)
     @ApiOperation({
-        summary: 'Create a New Vote Or Update an Existing One'
+        summary: 'Create a New Vote, or Update the Direction of an Existing Vote for the same Problem'
     })
     @ApiCreatedResponse({
-        description: 'Vote Created Or Updated Successfully',
+        description: 'Vote Created, or Existing Vote Direction Updated Successfully', 
         type: Vote,
     })
     @ApiUnauthorizedResponse({

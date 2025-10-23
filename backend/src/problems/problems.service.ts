@@ -3,7 +3,7 @@ import { Injectable,
     ForbiddenException
  } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, IsNull, Not, FindManyOptions } from 'typeorm';
+import { Repository, IsNull, Not, FindManyOptions , ILike } from 'typeorm';
 import { Problem } from "./entities/problem.entity";
 import { CreateProblemDto } from "./dto/create-problem.dto";
 import { UpdateProblemDto } from "./dto/update-problem.dto";
@@ -41,6 +41,14 @@ export class ProblemsService {
     // create problem 
     async create(problemDto: CreateProblemDto, userId: number): Promise<Problem>{
 
+        const section = await this.sectionRepo.findOne({
+            where : { id: problemDto.sectionId }
+        })
+
+        if (!section) {
+            throw new NotFoundException(`Section With ID ${problemDto.sectionId} not found`);
+        }
+
         const StateId = problemDto.stateId || this.DEFAULT_STATE_ID;
 
         try {
@@ -54,8 +62,9 @@ export class ProblemsService {
 
     catch(error)
     {
-        throw error;
+        throw new BadRequestException('Could Not Create Problem. Check Input Data');
     }
+
     }
 
     // find all problems
@@ -64,6 +73,7 @@ export class ProblemsService {
         limit: number = 10,
         sectionId?: number,
         stateId?: number,
+        searchTerm?: string,
     ): Promise<PaginatedProblems>{
 
         const skip = (page - 1) * limit;
@@ -76,6 +86,10 @@ export class ProblemsService {
 
         if (stateId){
             where['state_id'] = stateId;
+        }
+
+        if (searchTerm){
+            where['title'] = ILike(`%${searchTerm}%`);
         }
 
         const [problems,total] = await this.problemRepo.findAndCount({
@@ -119,9 +133,13 @@ export class ProblemsService {
 
         const newProblem = await this.findOne(id);
 
+        if (currentUserRole === UserRole.CITIZEN && newProblem.user_id !== currentUserId){
+            throw new ForbiddenException('You Do Not Have permission to Update This Problem');
+        }
+
         if (problemDto.stateId !== undefined && problemDto.stateId !== null){
 
-            if (currentUserRole !== UserRole.GOVERNMENT){
+            if (currentUserRole !== UserRole.GOVERNMENT && currentUserRole !== UserRole.ADMIN){
                 throw new ForbiddenException('Only Administrators Can Change The Problem Status (stateId)');
             }
 
@@ -139,7 +157,7 @@ export class ProblemsService {
 
         if(problemDto.sectionId !== undefined && problemDto.sectionId !== null){
 
-            if(currentUserRole !== UserRole.GOVERNMENT){
+            if(currentUserRole !== UserRole.GOVERNMENT && currentUserRole !== UserRole.ADMIN){
                 throw new ForbiddenException('Only Administrators Can Change The Section Category (SectionId');
             }
 
@@ -154,7 +172,7 @@ export class ProblemsService {
             delete problemDto.sectionId;
         }
 
-        if ('userId' in problemDto){
+        if ('userId' in problemDto || 'user_id' in problemDto){
             throw new BadRequestException('Cannot Change The Creator Of The Problem');
         }
 
@@ -163,9 +181,15 @@ export class ProblemsService {
     }
 
     // remove Problem 
-    async remove(id: number): Promise<void>{
-        const newProblem = await this.findOne(id);
-        await this.problemRepo.remove(newProblem);
+    async remove(id: number, currentUserId: number,currentUserRole: UserRole): Promise<void>{
+
+        const problemToDelete = await this.findOne(id);
+
+        if (problemToDelete.user_id !== currentUserId && currentUserRole !== UserRole.ADMIN && currentUserRole !== UserRole.GOVERNMENT){
+            throw new ForbiddenException('You Do not Have Permission to Delete This Problem');
+        }
+        
+        await this.problemRepo.remove(problemToDelete);
     }
 
 

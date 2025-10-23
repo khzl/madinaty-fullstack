@@ -61,7 +61,7 @@ export class UsersService {
         const skip = (page - 1) * limit;
 
         return this.UserRepo.find({
-            relations: ['problems','votes','donations','statusChanges'],
+            relations: ['problems','votes','donations','statusChanges', 'notifications'],
             order: {id : 'ASC'},
             take: limit,
             skip: skip,
@@ -73,7 +73,7 @@ export class UsersService {
         const user = await this.UserRepo.findOne({
             where: {id},
             // add relation to fetch data connect user
-            relations: ['problems','votes','donations','statusChanges'],
+            relations: ['problems','votes','donations','statusChanges','notifications'],
         });
 
         if(!user){
@@ -102,22 +102,52 @@ export class UsersService {
     }
 
     // 5- update user details 
-    async update(id: number, UserDto: UpdateUserDto): Promise<User>{
+    async update(
+        id: number, 
+        UserDto: UpdateUserDto,
+        currentUserId: number
+    ): Promise<User>{
 
         const user = await this.findById(id);
 
+        if (UserDto.email && UserDto.email !== user.email) {
+
+            const existingEmail = await this.UserRepo.findOne({
+                where: { email: UserDto.email },
+                select: ['id']
+            });
+
+            if (existingEmail) {
+                throw new ConflictException('User with this email already exists.');
+            }
+        }
+
+        if (UserDto.username && UserDto.username !== user.username) {
+
+            const existingUsername = await this.UserRepo.findOne({
+                where: { username: UserDto.username },
+                select: ['id']
+            });
+
+            if (existingUsername) {
+                throw new ConflictException('User with this username already exists.');
+            }
+        }
+
         if (UserDto.password){
             UserDto.password = await hashPassword(UserDto.password);
-
-            user.updated_at = new Date();
         }
-        else
-        {
-            delete UserDto.password;
+
+        const isSelfUpdate = id === currentUserId;
+        const currentUser = await this.findById(currentUserId);
+
+        if (UserDto.role && (isSelfUpdate || currentUser.role !== UserRole.ADMIN)) {
+            delete UserDto.role; 
         }
 
         const updated = Object.assign(user,UserDto);
         return this.UserRepo.save(updated);
+        
     }
 
     // 6- method to update only the password
@@ -143,5 +173,7 @@ export class UsersService {
             throw new NotFoundException(`User With ID ${id} Not Found`);
         }
     }
+    
+
     
 }

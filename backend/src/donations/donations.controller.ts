@@ -1,6 +1,6 @@
 import { Controller,
     Get,Post,Body,Patch,Param,Delete,
-    UseGuards,ParseIntPipe,Req,Query
+    UseGuards,ParseIntPipe,Req,Query,ForbiddenException
  } from "@nestjs/common";
 import { ApiTags,ApiOperation,
     ApiResponse,ApiBearerAuth,ApiUnauthorizedResponse,
@@ -65,10 +65,21 @@ export class DonationsController {
         description: 'List of filtered donations.',
         type: [Donation] 
     })
-    findAll(@Query()queryDto: DonationQueryDto){
+    findAll(@Query()queryDto: DonationQueryDto, @Req() request: any){
+
+        const currentUserId = request.user.id;
+        const currentUserRole = request.user.role;
 
         const problemId = queryDto.problemId ? parseInt(queryDto.problemId, 10) : undefined;
-        const userId = queryDto.userId ? parseInt(queryDto.userId, 10) : undefined;
+        let userId = queryDto.userId ? parseInt(queryDto.userId, 10) : undefined;
+
+        if (currentUserRole === 'citizen' && userId && userId !== currentUserId) {
+        throw new ForbiddenException('Citizens can only view their own donation records.');
+    }
+
+    if (currentUserRole === 'citizen' && !userId) {
+        userId = currentUserId;
+    }
 
         return this.donationsService.findAll(problemId,userId);
     }

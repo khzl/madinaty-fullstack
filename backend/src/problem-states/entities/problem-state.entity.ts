@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column,
-    OneToMany,CreateDateColumn,UpdateDateColumn
+    OneToMany,CreateDateColumn,UpdateDateColumn, ManyToOne , JoinColumn
  } from 'typeorm';
+ import { User } from 'src/users/entity/user.entity';
 import { Problem } from '../../problems/entities/problem.entity';
 import { ProblemStatusHistory } from 'src/problem-status-History/entities/problem-status-history.entity';
 @Entity('problem_states')
@@ -20,6 +21,16 @@ export class ProblemState {
 
     @UpdateDateColumn({type: 'timestamp'})
     updated_at: Date;
+
+    @Column({ nullable: true , name: 'solver_user_id'})
+    solverUserId: number | null;
+
+    @ManyToOne(() => User, user => user.solvedStates, {
+        onDelete: 'SET NULL', 
+        nullable: true,
+    })
+    @JoinColumn({ name: 'solver_user_id' })
+    solver: User;
 
     @OneToMany(() => Problem , Problem => Problem.state)
     problem: Problem[];

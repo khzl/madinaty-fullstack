@@ -1,5 +1,6 @@
 import { Controller,Get,Post,Body,
-    Patch,Param,Delete,UseGuards,ParseIntPipe
+    Patch,Param,Delete,UseGuards,ParseIntPipe,
+    Req, BadRequestException
  } from "@nestjs/common";
 import { ApiTags,ApiOperation,ApiResponse,ApiBearerAuth,
     ApiUnauthorizedResponse,ApiForbiddenResponse,ApiNotFoundResponse,
@@ -13,7 +14,7 @@ import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
 import { Roles } from "src/auth/decorators/roles.decorator";
 import { UserRole } from "src/users/entity/user.entity";
-
+import type { Request } from "express";
 @ApiTags('problem-states')
 @ApiBearerAuth()
 @Controller('problem-states')
@@ -99,9 +100,16 @@ export class ProblemStatesController {
     })
     update(
         @Param('id',ParseIntPipe)id: number,
-        @Body()stateDto: UpdateProblemStateDto
+        @Body()stateDto: UpdateProblemStateDto,
+        @Req() request: Request
     ){
-        return this.problemStateService.update(id,stateDto);
+
+        const currentUserId = (request.user as any)?.id;
+        if (typeof currentUserId !== 'number') {
+            throw new BadRequestException('Authenticated user ID not found');
+        }
+
+        return this.problemStateService.update(id,stateDto,currentUserId);
     }
 
     // remove 

@@ -18,7 +18,7 @@ import { Module , forwardRef } from '@nestjs/common';
       }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy, OptionalJwtAuthGuard],
-    exports: [AuthService , OptionalJwtAuthGuard],
+    providers: [AuthService, JwtStrategy],
+    exports: [AuthService],
   })
   export class AuthModule {}

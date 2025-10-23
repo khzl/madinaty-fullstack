@@ -17,7 +17,7 @@ export class Donation {
     })
     amount: number;
 
-    @Column({length: 3 , default: 'SAR'})
+    @Column({length: 3 , default: 'IQD'})
     currency: string;
 
     @Column({ name: 'payment_method', default: 'Credit Card'})
@@ -26,6 +26,9 @@ export class Donation {
     @Column({nullable: true})
     message: string;
 
+    @Column({ name: 'status', length: 20, default: 'Successful' })
+    status: string; // 'Pending', 'Successful', 'Failed'  
+    
     @CreateDateColumn({type: 'timestamp'})
     created_at: Date;
 
@@ -55,4 +58,5 @@ export class Donation {
     })
     @JoinColumn({name: 'user_id'})
     donor: User;
+
 }

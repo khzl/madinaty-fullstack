@@ -45,7 +45,13 @@ export class Problem {
     })
     location_map: string;
 
-
+    @Column({
+        type: 'int',
+        default: 0,
+        name: 'net_votes'
+    })
+    net_votes: number;
+    
     @CreateDateColumn({type : 'timestamp'})
     created_at: Date;
 

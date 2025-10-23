@@ -1,10 +1,13 @@
 import { Request, Body, Post, UseGuards,
-    Controller,Get,Patch,Param,Delete,ParseIntPipe,Query,Req
+    Controller,Get,Patch,Param,Delete,ParseIntPipe,Query,Req,
+    HttpCode,
+    HttpStatus
  } from "@nestjs/common";
 import { ApiTags,ApiOperation,ApiResponse,
     ApiBearerAuth,ApiBody,ApiUnauthorizedResponse,
     ApiForbiddenResponse,ApiNotFoundResponse,
-    ApiBadRequestResponse,ApiOkResponse,
+    ApiBadRequestResponse,ApiOkResponse,ApiQuery,
+    ApiParam
  } from "@nestjs/swagger";
 import { ProblemsService } from "./problems.service";
 import { CreateProblemDto } from "./dto/create-problem.dto";
@@ -16,6 +19,10 @@ import { RolesGuard } from "src/auth/guards/roles.guard";
 import { Roles } from "src/auth/decorators/roles.decorator";
 import { UserRole } from "src/users/entity/user.entity";
 import { ProblemOwnerOrAdminGuard } from "src/auth/guards/problem-owner-or-admin.guard";
+
+interface AuthenticatedRequest extends Request {
+    user: { id: number , role: UserRole }
+}
 
 @ApiTags('problems')
 @ApiBearerAuth()
@@ -44,37 +51,57 @@ export class ProblemsController {
     @ApiBadRequestResponse({
         description: 'Invalid Data or Section/state Id Not Found'
     })
-    create(@Body() problemDto: CreateProblemDto,@Request() request: any){
+    create(@Body() problemDto: CreateProblemDto,@Request() request: AuthenticatedRequest){
         const userId = request.user.id;
         return this.problemsService.create(problemDto,userId);
     }
 
     @Get()
     @ApiOperation({
-        summary: 'Retrieve All Problem Reports With Pagination And Optional Filtering'
+         summary: 'Retrieve all problems with pagination, filtering by section/state, and search by title.' 
     })
-    @ApiOkResponse({
-        description: 'List Of Problems Reports And Total Count',
-        schema: {
-            type: 'object',
-            properties: {
-                data: {
-                    type: 'array',
-                    items: { $ref: '#/components/schemas/Problem'}},
-                total: {
-                    type: 'number',
-                    example: 50}
-            }
-        }
+    @ApiQuery({ 
+        name: 'page',
+        required: false, 
+        type: Number,
+        description: 'Page number (default: 1)' 
     })
-    findAll(@Query() queryDto: ProblemQueryDto){
-        // Convert string parameters to numbers for the service 
-        const page = parseInt(queryDto.page || '1',10);
-        const limit = parseInt(queryDto.limit || '10',10);
-        const sectionId = queryDto.sectionId ? parseInt(queryDto.sectionId, 10) : undefined;
-        const stateId = queryDto.stateId ? parseInt(queryDto.stateId, 10) : undefined;
-
-        return this.problemsService.findAll(page,limit,sectionId,stateId);
+    @ApiQuery({ 
+        name: 'limit',
+        required: false,
+        type: Number,
+        description: 'Items per page (default: 10)' 
+    })
+    @ApiQuery({ 
+        name: 'sectionId',
+        required: false,
+        type: Number,
+        description: 'Filter problems by section ID.' 
+    })
+    @ApiQuery({ 
+        name: 'stateId',
+        required: false,
+        type: Number,
+        description: 'Filter problems by problem state ID.' 
+    })
+    @ApiQuery({ 
+        name: 'searchTerm',
+        required: false,
+        type: String,
+        description: 'Search term applied to the problem title (case-insensitive).' 
+    })
+    @ApiResponse({ 
+        status: 200,
+        description: 'List of problems and pagination data.' 
+    })
+    findAll(
+        @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+        @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+        @Query('sectionId', new ParseIntPipe({ optional: true })) sectionId?: number,
+        @Query('stateId', new ParseIntPipe({ optional: true })) stateId?: number,
+        @Query('searchTerm') searchTerm?: string,
+    ){
+        return this.problemsService.findAll(page,limit,sectionId,stateId,searchTerm);
     }
 
     @Get(':id')
@@ -112,7 +139,7 @@ export class ProblemsController {
     update(
         @Param('id',ParseIntPipe)id: number,
         @Body()problemDto:UpdateProblemDto,
-        @Req()request:any
+        @Req()request:AuthenticatedRequest
     ){
         const currentUserId = request.user.id;
         const currentUserRole = request.user.role;
@@ -121,9 +148,13 @@ export class ProblemsController {
 
     @Delete(':id')
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(UserRole.GOVERNMENT)
+    @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({
         summary: 'Delete a Problem Report'
+    })
+    @ApiParam({
+        name: 'id',
+        type: Number
     })
     @ApiResponse({
         status: 200,
@@ -135,8 +166,10 @@ export class ProblemsController {
     @ApiNotFoundResponse({
         description: 'Problem Not found'
     })
-    remove(@Param('id',ParseIntPipe)id: number){
-        return this.problemsService.remove(id);
+    remove(@Param('id',ParseIntPipe)id: number, @Req() request: AuthenticatedRequest){
+        const userId = request.user.id;
+        const userRole = request.user.role;
+        return this.problemsService.remove(id,userId,userRole);
     }
     
 }
