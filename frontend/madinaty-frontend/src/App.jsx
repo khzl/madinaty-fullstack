@@ -15,11 +15,19 @@ import {
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import About from "./pages/about";
+import EditReport from "./pages/EditReport";
+import Done from "./components/Done";
 
 function Layout() {
   const location = useLocation();
 
-  const hideLayoutPaths = ["/add-report", "/profile", "/", "/register"];
+  const hideLayoutPaths = [
+    "/add-report",
+    "/profile",
+    "/",
+    "/register",
+    "/edit-report",
+  ];
   const hideLayout = hideLayoutPaths.includes(location.pathname);
   return (
     <>
@@ -31,9 +39,9 @@ function Layout() {
         <Route path="/register" element={<Register />} />
 
         <Route path="/home" element={<Home />} />
-
+        <Route path="/edit-report" element={<EditReport />} />
         <Route path="/reports" element={<Reports />} />
-        <Route path="/fixed" element={<Fixed />} />
+        <Route path="/fixed" element={<Done />} />
         <Route path="/about" element={<About />} />
         <Route path="/add-report" element={<AddReport />} />
         <Route path="/profile" element={<Profile />} />

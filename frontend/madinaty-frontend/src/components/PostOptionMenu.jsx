@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../style/dropDown.css";
 
-export default function OptionsMenu({ isAdmin = true }) {
+export default function OptionsMenu({ report, isAdmin = true }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef();
+  const navigate = useNavigate();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -16,6 +17,30 @@ export default function OptionsMenu({ isAdmin = true }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleComplete = () => {
+    const reports = JSON.parse(localStorage.getItem("reports")) || [];
+    const updatedReports = reports.map((r) =>
+      r.id === report.id ? { ...r, completed: true } : r
+    );
+    localStorage.setItem("reports", JSON.stringify(updatedReports));
+    alert("تم إنجازه ✅");
+    setOpen(false);
+  };
+
+  const handleDelete = () => {
+    const reports = JSON.parse(localStorage.getItem("reports")) || [];
+    const filteredReports = reports.filter((r) => r.id !== report.id);
+    localStorage.setItem("reports", JSON.stringify(filteredReports));
+    alert("تم حذف البلاغ 🗑️");
+    setOpen(false);
+    window.location.reload(); // quick refresh to reflect change
+  };
+
+  const handleEdit = () => {
+    navigate("/edit-report", { state: { id: report.id } });
+    setOpen(false);
+  };
+
   return (
     <div className="options-menu" ref={menuRef}>
       <button className="menu-button" onClick={() => setOpen(!open)}>
@@ -24,20 +49,13 @@ export default function OptionsMenu({ isAdmin = true }) {
 
       {open && (
         <div className="dropdown">
-          {isAdmin && (
-            <button
-              onClick={() => {
-                alert("تم انجازه ✅");
-                setOpen(false);
-              }}
-            >
-              تم انجازه
-            </button>
-          )}
-          <Link to="/learned" onClick={() => setOpen(false)}>
-            تعديل{" "}
-          </Link>
-          <a href="https://api-requests-practice.vercel.app">حذف</a>
+          {isAdmin && <button onClick={handleComplete}>تم إنجازه</button>}
+
+          <button onClick={handleEdit}>تعديل</button>
+
+          <button onClick={handleDelete} className="text-red-500">
+            حذف
+          </button>
         </div>
       )}
     </div>

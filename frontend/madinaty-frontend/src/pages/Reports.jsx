@@ -45,8 +45,6 @@ const Reports = () => {
         <p className="opacity-50 text-xl">رجوع</p>
       </button>
       <Posts />
-      <Posts />
-      <Posts />
     </div>
   );
 };
